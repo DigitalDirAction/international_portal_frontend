@@ -1,6 +1,7 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box, Container } from "@mui/material";
+import { AppBar, Toolbar, Box, Typography, Container } from "@mui/material";
 import { NorthEast } from "@mui/icons-material";
+import logo from "../../assets/Superior-University-Logo.svg"; // update the path as per your project structure
 
 const Navbar = () => {
   return (
@@ -9,7 +10,7 @@ const Navbar = () => {
       sx={{
         backgroundColor: "#fff",
         color: "#333",
-        boxShadow: 1,
+        boxShadow: "rgba(0, 0, 0, 0.1) 0px 0px 10px 0px",
         py: 1,
       }}
     >
@@ -25,45 +26,73 @@ const Navbar = () => {
         >
           {/* Left Section: Logo */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              MyLogo
-            </Typography>
+            <img
+              src={logo}
+              alt="Logo"
+              style={{ height: 40, objectFit: "contain" }} // adjust height as needed
+            />
           </Box>
 
           {/* Center Section: Portals */}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               flexGrow: 1,
-              gap: 3,
               flexWrap: "wrap",
+              display: "flex",
+              justifyContent: "center",
             }}
           >
-            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-              Portals:
-            </Typography>
-            {[
-              { name: "Student", icon: <NorthEast sx={{ fontSize: 18 }} /> },
-              { name: "Faculty", icon: <NorthEast sx={{ fontSize: 18 }} /> },
-              { name: "Alumni", icon: <NorthEast sx={{ fontSize: 18 }} /> },
-              { name: "Admissions", icon: <NorthEast sx={{ fontSize: 18 }} /> },
-            ].map((item) => (
-              <Box
-                key={item.name}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "fit-content",
+               
+              }}
+            >
+              <Typography
+                variant="body2"
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  cursor: "pointer",
-                  "&:hover": { color: "blue" },
+                  padding: "7px  12px",
+                  border: "1px solid #333333",
+                  borderEndStartRadius: "6px", 
+                    borderStartStartRadius: "6px",
+                  backgroundColor: "#79007712",
                 }}
               >
-                <Typography variant="body2">{item.name}</Typography>
-                {item.icon}
+                Portals
+              </Typography>
+              <Box sx={{
+                display: "flex",
+                    border: "1px solid #333333",
+                    padding: "0px  12px",
+                    borderLeft: "none !important",
+                    borderEndEndRadius: "6px", 
+                    borderStartEndRadius: "6px"}}>
+              {[
+                { name: "Student", icon: <NorthEast sx={{ fontSize: 18 }} /> },
+                { name: "Faculty", icon: <NorthEast sx={{ fontSize: 18 }} /> },
+                { name: "Alumni", icon: <NorthEast sx={{ fontSize: 18 }} /> },
+                { name: "Admissions", icon: <NorthEast sx={{ fontSize: 18 }} /> },
+              ].map((item) => (
+                <Box
+                  key={item.name}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    cursor: "pointer",
+                    "&:hover": { color: "blue" },
+                    padding: "5px",
+                  }}
+                >
+                  <Typography variant="body2">{item.name}</Typography>
+                  {item.icon}
+                </Box>
+              ))}
               </Box>
-            ))}
+            </Box>
           </Box>
         </Toolbar>
       </Container>
