@@ -75,6 +75,7 @@ const Sidebar = () => {
             <Typography>Salman Ahmad</Typography>
           </Box>
           <IconButton
+          onClick={()=>navigate("/profile")}
             size="small"
             sx={{
               color: "#424242",

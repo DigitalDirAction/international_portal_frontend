@@ -32,6 +32,7 @@ const handleLogin = async () => {
       
           // Navigate after login only if successful
           localStorage.setItem("token", response.data.token)
+          localStorage.setItem("userId", response.data.data.id)
           navigate("/dashboard");
     }
     else{
