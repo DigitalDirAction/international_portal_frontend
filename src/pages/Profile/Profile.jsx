@@ -13,10 +13,10 @@ import axios from "axios";
 
 const ProfilePage = () => {
   const [formData, setFormData] = React.useState({
-    fullName: "Kristin Watson",
-    email: "hey@superior.edu.pk",
-    cnic: "34101-7649367-1",
-    mobileNumber: "0300-0000000-0",
+    fullName: "",
+    email: "",
+    cnic: "",
+    mobileNumber: "",
     profileImageFile: null,
     previewImage: "https://cdn-icons-png.flaticon.com/512/706/706830.png",
   });
