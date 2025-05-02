@@ -8,7 +8,7 @@ import ResponsiveCarousel from '../../components/TopBanner/TopBanner';
 
 
 const Dashboard = () => (
-  <Box sx={{ p: 2, flex: 1, mt: 10}}>
+  <Box sx={{ p: 2, mt: 10}}>
     <ResponsiveCarousel />
     <RecentApplications />
   </Box>
