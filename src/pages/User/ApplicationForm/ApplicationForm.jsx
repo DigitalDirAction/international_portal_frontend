@@ -373,47 +373,6 @@ const userId = localStorage.getItem('userId');
     }
   };
   
-  // const handleSaveStep8 = async (documents, profileImage) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const formData = new FormData();
-  
-  //     formData.append("application_id", applicationId);
-  //     formData.append("profile_image", profileImage);
-  //     formData.append("passport", documents["Passport"]);
-  //     formData.append("english_language_score", documents["English Language Proficiency Score"]);
-  //     formData.append("high_school_diploma", documents["High School Diploma"]);
-  //     formData.append("high_school_degree_transcript", documents["High School Degree Transcript"]);
-  //     formData.append("high_school_diploma_equivalent", documents["High School Diploma Equivalent"]);
-  //     formData.append("diploma_or_transcripts_translations", documents["Diploma or Transcripts Translations"]);
-  //     formData.append("motivation_letter", documents["Motivation Letter"]);
-  //     formData.append("additional_document", documents["Additional Document"]);
-  
-  //     const response = await axios.post(
-  //       `${import.meta.env.VITE_BASE_URL}admission/step8`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-  
-  //     console.log("Step 8 submitted:", response.data);
-  //     handleNext();
-  //   } catch (error) {
-  //     console.error("Error in Step 8:", error.response?.data || error.message);
-  //   }
-  // };
-  
-  
-  
-  
-  
-  
-  
-  
 
   return (
     <Box sx={{ p: 2, flex: 1, mt: 10 }}>

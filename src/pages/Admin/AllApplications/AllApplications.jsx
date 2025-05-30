@@ -24,7 +24,7 @@ import axios from "axios";
 
 const tableHeaders = ["ID", "APPLICATION TYPE", "DATE", "STATUS", "ACTION"];
 
-const MyApplications = () => {
+const AllApplications = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,14 +33,14 @@ const MyApplications = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}get_application`,
+        `${import.meta.env.VITE_BASE_URL}admin/applications`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setApplications(response.data.data.application || []);
+      setApplications(response.data || []);
     } catch (error) {
       console.error("Failed to fetch applications:", error.response?.data || error.message);
     } finally {
@@ -52,11 +52,13 @@ const MyApplications = () => {
     fetchApplications();
   }, []);
 
-  const isEligibleToApply = applications.some(
-    (app) =>
-      app.status.toLowerCase() === "completed" ||
-      app.status.toLowerCase() === "rejected"
-  );
+  const formatLabel = (text) => {
+    if (!text) return "";
+    return text
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   
 
   return (
@@ -66,29 +68,6 @@ const MyApplications = () => {
           <ContentCopy sx={{ backgroundColor: "#F2E5F1", color: "#790077", borderRadius: "20px", padding: "8px", fontSize: "20px" }} />
           <Typography variant="h6">My Applications</Typography>
         </Box>
-        <Button
-          variant="contained"
-          disabled={!isEligibleToApply}
-          sx={{
-            borderRadius: "5px",
-            backgroundColor: isEligibleToApply ? "#F2E5F1" : "#ccc",
-            fontSize: "14px",
-            padding: "10px",
-            textTransform: "inherit",
-            color: isEligibleToApply? "#790077" : "#000",
-            cursor: isEligibleToApply ? "pointer" : "not-allowed",
-          }}
-          onClick={() => isEligibleToApply && navigate("/application-form")}
-        >
-          New Application
-          <AddCircleOutline
-            sx={{
-              color: isEligibleToApply? "#790077" : "#000",
-              fontSize: "17px",
-              ml: 1,
-            }}
-          />
-        </Button>
 
       </Box>
 
@@ -120,13 +99,13 @@ const MyApplications = () => {
               {applications.map((app) => (
                 <TableRow key={app.id}>
                   <TableCell sx={{ padding: "10px 16px" }}>{app.id}</TableCell>
-                  <TableCell sx={{ padding: "10px 16px" }}>{app.application_type}</TableCell>
+                  <TableCell sx={{ padding: "10px 16px" }}>{formatLabel(app.application_type)}</TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     {new Date(app.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Chip
-                      label={app.status}
+                      label={formatLabel(app.status)}
                       sx={{
                         color: app.status === "Completed" ? "#00B69B" : "#FFA756",
                         backgroundColor: app.status === "Completed" ? "#4affe438" : "#ffc99645",
@@ -137,7 +116,7 @@ const MyApplications = () => {
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Button
-                    onClick={() => navigate(`/application-form/${app.id}/step/0`)}
+                    onClick={() => navigate(`/view-details/${app.id}`)}
                       sx={{
                         color: "black",
                         fontSize: "14px",
@@ -167,4 +146,4 @@ const MyApplications = () => {
   );
 };
 
-export default MyApplications;
+export default AllApplications;
