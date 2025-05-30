@@ -11,6 +11,7 @@ import {
 import {
   AccessTime,
   ContentCopy,
+  People,
   Phone,
   PowerSettingsNew,
   SettingsOutlined,
@@ -22,6 +23,9 @@ import toast from "react-hot-toast";
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const role = localStorage.getItem('role');
+  console.log(role)
+  const fullName = localStorage.getItem('fullName');
 
   const handleLogout = async () => {
     try {
@@ -48,11 +52,17 @@ const Sidebar = () => {
     }
   };
 
-  const navItems = [
-    { label: "Dashboard", icon: <AccessTime fontSize="small" />, path: "/dashboard" },
-    { label: "My Applications", icon: <ContentCopy fontSize="small" />, path: "/applications" },
-    { label: "Contact Us", icon: <Phone fontSize="small" />, path: "/contact" },
-  ];
+  const navItems = role === "admin"
+    ? [
+        { label: "Dashboard", icon: <AccessTime fontSize="small" />, path: "/admin-dashboard" },
+        { label: "All Applications", icon: <ContentCopy fontSize="small" />, path: "/all-applications" },
+        { label: "Add Admin", icon: <People fontSize="small" />, path: "/admin-list" },
+      ]
+    : [
+        { label: "Dashboard", icon: <AccessTime fontSize="small" />, path: "/dashboard" },
+        { label: "My Applications", icon: <ContentCopy fontSize="small" />, path: "/applications" },
+        { label: "Contact Us", icon: <Phone fontSize="small" />, path: "/contact" },
+      ];
 
   return (
     <Box
@@ -70,12 +80,12 @@ const Sidebar = () => {
       <Box>
         {/* Profile Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 2, mt: 12 }}>
-          <Avatar src="/avatar.png" alt="Salman Ahmad" />
+          <Avatar src="/avatar.png" alt="User" />
           <Box sx={{ flexGrow: 1 }}>
-            <Typography>Salman Ahmad</Typography>
+            <Typography>{role === 'admin' ? fullName || 'Admin' : 'User'}</Typography>
           </Box>
           <IconButton
-          onClick={()=>navigate("/profile")}
+          onClick={() => navigate(role === "admin" ? "/admin-profile" : "/profile")}
             size="small"
             sx={{
               color: "#424242",

@@ -28,12 +28,20 @@ const handleLogin = async () => {
 
     if(response.data.status == 200) {
       console.log("Login successful:", response.data);
+      const role = response.data.data.roles[0].name;
       toast.success("Login Successfull");
       
           // Navigate after login only if successful
           localStorage.setItem("token", response.data.token)
           localStorage.setItem("userId", response.data.data.id)
-          navigate("/dashboard");
+          localStorage.setItem("role", response.data.data.roles[0].name)
+          localStorage.setItem("fullName", response.data.data.full_name)
+          if(role==='admin') {
+            navigate("/admin-dashboard");
+          }
+          else {
+            navigate("/dashboard");
+          }
     }
     else{
       const status = response?.data.status;

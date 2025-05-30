@@ -10,6 +10,7 @@ import {
   Stack,
 } from "@mui/material";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const [formData, setFormData] = React.useState({
@@ -22,6 +23,55 @@ const ProfilePage = () => {
   });
 
   const fileInputRef = React.useRef();
+
+  // Fetch profile data on mount
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Authentication token missing.");
+        return;
+      }
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}get_profile`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (response.data && response.data.data) {
+          const data = response.data.data;
+  
+          // Example: API returns relative path like 'profile_image': '/media/profile.jpg'
+          // Adjust base URL accordingly
+          const baseMediaUrl = import.meta.env.VITE_BASE_URL; // or your media base URL
+          const profileImageUrl = data.profile_image
+            ? (data.profile_image.startsWith("http")
+              ? data.profile_image
+              : baseMediaUrl + data.profile_image)
+            : "https://cdn-icons-png.flaticon.com/512/706/706830.png";
+  
+          setFormData((prev) => ({
+            ...prev,
+            fullName: data.full_name || "",
+            email: data.email || "",
+            cnic: data.cnic || "",
+            mobileNumber: data.mobile_number || "",
+            previewImage: profileImageUrl,
+          }));
+        } else {
+          toast.error("Failed to load profile data.");
+        }
+      } catch (error) {
+        toast.error("Error fetching profile data.");
+        console.error("Fetch profile error:", error.response?.data || error.message);
+      }
+    };
+  
+    fetchProfile();
+  }, []);
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,23 +91,23 @@ const ProfilePage = () => {
   const handleSave = async () => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
-
+  
     if (!userId || !token) {
-      console.error("Missing user ID or token in localStorage");
+      toast.error("Missing user ID or authentication token.");
       return;
     }
-
+  
     const formPayload = new FormData();
     formPayload.append("user_id", userId);
     formPayload.append("full_name", formData.fullName);
     formPayload.append("email", formData.email);
     formPayload.append("cnic", formData.cnic);
     formPayload.append("mobile_number", formData.mobileNumber);
-
+  
     if (formData.profileImageFile) {
       formPayload.append("profile_image", formData.profileImageFile);
     }
-
+  
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}set_profile`,
@@ -69,20 +119,45 @@ const ProfilePage = () => {
           },
         }
       );
-      console.log("Profile saved:", response.data);
+  
+      // Check for validation errors in response
+      if (response.data.status && response.data.status === 422) {
+        // Show all validation error messages
+        if (response.data.errors) {
+          Object.values(response.data.errors).forEach((errArr) => {
+            errArr.forEach((errMsg) => toast.error(errMsg));
+          });
+        } else {
+          toast.error(response.data.message || "Validation errors");
+        }
+        return; // stop further success toast
+      }
+  
+      // Otherwise, success
+      toast.success("Profile saved successfully");
     } catch (error) {
-      console.error("Error saving profile:", error);
+      // Handle errors thrown by axios or server
+      if (error.response?.status === 422 && error.response.data.errors) {
+        Object.values(error.response.data.errors).forEach((errArr) => {
+          errArr.forEach((errMsg) => toast.error(errMsg));
+        });
+      } else {
+        toast.error("Error saving profile");
+      }
+      console.error("Error saving profile:", error.response?.data || error.message);
     }
   };
+  
+  
 
   const handleCancel = () => {
-    console.log("Cancelled changes");
+    toast.info("Changes cancelled");
   };
 
   return (
     <Box sx={{ mt: 10, display: "flex", justifyContent: "center" }}>
       <Paper sx={{ width: "100%", m: 2, p: 4, borderRadius: 2 }}>
-        <Box sx={{ maxWidth: "500px", justifySelf: "center", width: "100%", py:2 }}>
+        <Box sx={{ maxWidth: "500px", justifySelf: "center", width: "100%", py: 2 }}>
           <Typography variant="h6" sx={{ backgroundColor: "#f2f2f2", p: 1.5, borderRadius: 1 }}>
             My Profile
           </Typography>

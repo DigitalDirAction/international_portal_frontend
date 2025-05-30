@@ -2,6 +2,7 @@ import {
   AccessTime,
   AddCircleOutline,
   ArrowForward,
+  ContentCopy,
 } from "@mui/icons-material";
 import {
   Box,
@@ -15,6 +16,7 @@ import {
   Chip,
   CircularProgress,
   TableContainer,
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -22,7 +24,7 @@ import axios from "axios";
 
 const tableHeaders = ["ID", "APPLICATION TYPE", "DATE", "STATUS", "ACTION"];
 
-const RecentApplications = () => {
+const MyApplications = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,11 +40,7 @@ const RecentApplications = () => {
           },
         }
       );
-      const allApps = response.data.data.application || [];
-
-      // Sort by creation date descending
-      const sorted = allApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setApplications(sorted.slice(0, 5)); // Only show 5 most recent
+      setApplications(response.data.data.application || []);
     } catch (error) {
       console.error("Failed to fetch applications:", error.response?.data || error.message);
     } finally {
@@ -58,48 +56,40 @@ const RecentApplications = () => {
     (app) =>
       app.status.toLowerCase() === "completed" ||
       app.status.toLowerCase() === "rejected"
-  ) || applications.length === 0;
+  );
+  
 
   return (
-    <Box sx={{ mt: 2, borderRadius: "10px", backgroundColor: "white", minHeight: "350px" }}>
+    <Box sx={{ mt: 12, mx: 2, flex: 1, borderRadius: "10px", backgroundColor: "white", minHeight: "80vh" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 25px" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <AccessTime sx={{ backgroundColor: "#F2E5F1", color: "#790077", borderRadius: "20px", padding: "8px", fontSize: "20px" }} />
-          <Typography variant="h6">Recent</Typography>
+          <ContentCopy sx={{ backgroundColor: "#F2E5F1", color: "#790077", borderRadius: "20px", padding: "8px", fontSize: "20px" }} />
+          <Typography variant="h6">My Applications</Typography>
         </Box>
-        <Box display="flex" gap={1}>
-          <Button
-            size="small"
-            onClick={() => navigate("/applications")}
+        <Button
+          variant="contained"
+          disabled={!isEligibleToApply}
+          sx={{
+            borderRadius: "5px",
+            backgroundColor: isEligibleToApply ? "#F2E5F1" : "#ccc",
+            fontSize: "14px",
+            padding: "10px",
+            textTransform: "inherit",
+            color: isEligibleToApply? "#790077" : "#000",
+            cursor: isEligibleToApply ? "pointer" : "not-allowed",
+          }}
+          onClick={() => isEligibleToApply && navigate("/application-form")}
+        >
+          New Application
+          <AddCircleOutline
             sx={{
-              textTransform: "none",
-              fontSize: "13px",
-              color: "#790077",
-              backgroundColor: "#f5e6f3",
-              "&:hover": {
-                backgroundColor: "#ebd6ea",
-              },
+              color: isEligibleToApply? "#790077" : "#000",
+              fontSize: "17px",
+              ml: 1,
             }}
-          >
-            View All
-          </Button>
-          <Button
-            variant="contained"
-            disabled={!isEligibleToApply}
-            sx={{
-              borderRadius: "5px",
-              backgroundColor: isEligibleToApply ? "#790077" : "#ccc",
-              fontSize: "14px",
-              padding: "10px",
-              textTransform: "inherit",
-              cursor: isEligibleToApply ? "pointer" : "not-allowed",
-            }}
-            onClick={() => isEligibleToApply && navigate("/application-form")}
-          >
-            New Application
-            <AddCircleOutline sx={{ color: "#fff", fontSize: "17px", ml: 1 }} />
-          </Button>
-        </Box>
+          />
+        </Button>
+
       </Box>
 
       {loading ? (
@@ -147,7 +137,7 @@ const RecentApplications = () => {
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Button
-                      onClick={() => navigate(`/user-view-details/${app.id}`)}
+                    onClick={() => navigate(`/user-view-details/${app.id}`)}
                       sx={{
                         color: "black",
                         fontSize: "14px",
@@ -177,4 +167,4 @@ const RecentApplications = () => {
   );
 };
 
-export default RecentApplications;
+export default MyApplications;

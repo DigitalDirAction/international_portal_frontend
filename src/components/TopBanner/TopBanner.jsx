@@ -7,9 +7,9 @@ import "slick-carousel/slick/slick-theme.css";
 
 // Image URLs
 const images = [
-  'https://propakistani.pk/wp-content/uploads/2023/07/3U1M-Superior-Universitys-Distinctive-Framework-with-Four-Specialized-Streams-to-Ensure-Employability-and-Career-Success.jpg',
-  'https://www.superior.edu.pk/wp-content/uploads/2023/10/Main-Superior-University-1.webp',
-  'https://almashines.s3.dualstack.ap-southeast-1.amazonaws.com/assets/images/cover/1664.jpg?r=1',
+  '/src/assets/DJI_0108-scaled-1 1.svg',
+  '/src/assets/image 11.svg',
+  '/src/assets/image 9.svg',
 ];
 
 // Custom arrow components

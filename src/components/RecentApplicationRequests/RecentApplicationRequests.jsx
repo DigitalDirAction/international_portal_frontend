@@ -22,7 +22,7 @@ import axios from "axios";
 
 const tableHeaders = ["ID", "APPLICATION TYPE", "DATE", "STATUS", "ACTION"];
 
-const RecentApplications = () => {
+const RecentApplicationRequests = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,14 +31,14 @@ const RecentApplications = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}get_application`,
+        `${import.meta.env.VITE_BASE_URL}admin/applications`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      const allApps = response.data.data.application || [];
+      const allApps = response.data || [];
 
       // Sort by creation date descending
       const sorted = allApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -54,23 +54,26 @@ const RecentApplications = () => {
     fetchApplications();
   }, []);
 
-  const isEligibleToApply = applications.some(
-    (app) =>
-      app.status.toLowerCase() === "completed" ||
-      app.status.toLowerCase() === "rejected"
-  ) || applications.length === 0;
+  const formatLabel = (text) => {
+    if (!text) return "";
+    return text
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+  
 
   return (
     <Box sx={{ mt: 2, borderRadius: "10px", backgroundColor: "white", minHeight: "350px" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 25px" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <AccessTime sx={{ backgroundColor: "#F2E5F1", color: "#790077", borderRadius: "20px", padding: "8px", fontSize: "20px" }} />
-          <Typography variant="h6">Recent</Typography>
+          <Typography variant="h6">Recent Application Requests</Typography>
         </Box>
         <Box display="flex" gap={1}>
           <Button
             size="small"
-            onClick={() => navigate("/applications")}
+            onClick={() => navigate("/all-applications")}
             sx={{
               textTransform: "none",
               fontSize: "13px",
@@ -82,22 +85,6 @@ const RecentApplications = () => {
             }}
           >
             View All
-          </Button>
-          <Button
-            variant="contained"
-            disabled={!isEligibleToApply}
-            sx={{
-              borderRadius: "5px",
-              backgroundColor: isEligibleToApply ? "#790077" : "#ccc",
-              fontSize: "14px",
-              padding: "10px",
-              textTransform: "inherit",
-              cursor: isEligibleToApply ? "pointer" : "not-allowed",
-            }}
-            onClick={() => isEligibleToApply && navigate("/application-form")}
-          >
-            New Application
-            <AddCircleOutline sx={{ color: "#fff", fontSize: "17px", ml: 1 }} />
           </Button>
         </Box>
       </Box>
@@ -130,13 +117,13 @@ const RecentApplications = () => {
               {applications.map((app) => (
                 <TableRow key={app.id}>
                   <TableCell sx={{ padding: "10px 16px" }}>{app.id}</TableCell>
-                  <TableCell sx={{ padding: "10px 16px" }}>{app.application_type}</TableCell>
+                  <TableCell sx={{ padding: "10px 16px" }}>{formatLabel(app.application_type)}</TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     {new Date(app.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Chip
-                      label={app.status}
+                      label={formatLabel(app.status)}
                       sx={{
                         color: app.status === "Completed" ? "#00B69B" : "#FFA756",
                         backgroundColor: app.status === "Completed" ? "#4affe438" : "#ffc99645",
@@ -147,7 +134,7 @@ const RecentApplications = () => {
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Button
-                      onClick={() => navigate(`/user-view-details/${app.id}`)}
+                      onClick={() => navigate(`/view-details/${app.id}`)}
                       sx={{
                         color: "black",
                         fontSize: "14px",
@@ -177,4 +164,4 @@ const RecentApplications = () => {
   );
 };
 
-export default RecentApplications;
+export default RecentApplicationRequests;
