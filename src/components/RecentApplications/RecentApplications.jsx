@@ -58,7 +58,7 @@ const RecentApplications = () => {
     (app) =>
       app.status.toLowerCase() === "completed" ||
       app.status.toLowerCase() === "rejected"
-  );
+  ) || applications.length === 0;
 
   return (
     <Box sx={{ mt: 2, borderRadius: "10px", backgroundColor: "white", minHeight: "350px" }}>
@@ -147,7 +147,7 @@ const RecentApplications = () => {
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Button
-                      onClick={() => navigate(`/application-form/${app.id}/step/0`)}
+                      onClick={() => navigate(`/user-view-details/${app.id}`)}
                       sx={{
                         color: "black",
                         fontSize: "14px",
