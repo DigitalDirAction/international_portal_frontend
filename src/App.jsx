@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Auth/Login/login";
+import Login from "./pages/Auth/Login/Login";
 import Signup from "./pages/Auth/Signup/Signup";
 import ForgetPassword from "./pages/Auth/ForgetPassword/ForgetPassword";
 import OtpScreen from "./pages/Auth/Otp/Otp";

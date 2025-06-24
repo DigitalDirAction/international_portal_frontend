@@ -15,11 +15,17 @@ import EducationDialog from "../Dialog/EducationDialog";
 import ExamDialog from "../Dialog/ExamDialog";
 import ExperienceDialog from "../Dialog/ExperienceDialog";
 import axios from "axios";
+import Education from '../../../../assets/Education.svg'
+import Exam from '../../../../assets/Grades.svg'
+import Experience from '../../../../assets/New Job.svg'
+
+
+
 
 const infoOptions = [
-  { label: "Education", icon: "/src/assets/Education.svg" },
-  { label: "Exam", icon: "/src/assets/Grades.svg" },
-  { label: "Experience", icon: "/src/assets/New Job.svg" },
+  { label: "Education", icon: Education },
+  { label: "Exam", icon: Exam },
+  { label: "Experience", icon: Experience },
 ];
 
 const Step7 = ({ selectedEducation, setSelectedEducation }) => {
