@@ -2,6 +2,7 @@ import {
   AccessTime,
   AddCircleOutline,
   ArrowForward,
+  Edit,
 } from "@mui/icons-material";
 import {
   Box,
@@ -133,6 +134,7 @@ const RecentApplicationRequests = () => {
                     />
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
+                  
                     <Button
                       onClick={() => navigate(`/view-details/${app.id}`)}
                       sx={{
@@ -153,6 +155,7 @@ const RecentApplicationRequests = () => {
                         }}
                       />
                     </Button>
+                    
                   </TableCell>
                 </TableRow>
               ))}

@@ -2,6 +2,7 @@ import {
   AccessTime,
   AddCircleOutline,
   ArrowForward,
+  Edit,
 } from "@mui/icons-material";
 import {
   Box,
@@ -146,12 +147,35 @@ const RecentApplications = () => {
                     />
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
+                    {!(["completed", "rejected"].includes(app.status.toLowerCase())) && (
+                      <Button
+                        onClick={() => navigate(`/application-form/${app.id}/step/0`)}
+                        sx={{
+                          color: "black",
+                          fontSize: "14px",
+                          textTransform: "inherit",
+                        }}
+                      >
+                        Edit
+                        <Edit
+                          sx={{
+                            backgroundColor: "#F2E5F1",
+                            borderRadius: "20px",
+                            fontSize: "17px",
+                            padding: "5px",
+                            color: "#790077",
+                            ml: 1,
+                          }}
+                        />
+                      </Button>
+                    )}
                     <Button
                       onClick={() => navigate(`/user-view-details/${app.id}`)}
                       sx={{
                         color: "black",
                         fontSize: "14px",
                         textTransform: "inherit",
+                        ml: 1,
                       }}
                     >
                       View Details
