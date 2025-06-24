@@ -4,6 +4,7 @@ import { Box, Typography, Paper, Avatar, Grid, Chip, TextField, Button, IconButt
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import { CircularProgress } from '@mui/material';
+import Doc from '../../../assets/Doc.svg'
 
 const ViewDetails = () => {
   const { applicationId } = useParams();
@@ -500,7 +501,7 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
                     >
                       <Box 
                         component="img" 
-                        src="/src/assets/Doc.svg" 
+                        src={Doc} 
                         alt="document icon"
                         sx={{
                           width: 22,

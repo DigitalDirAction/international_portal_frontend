@@ -4,12 +4,15 @@ import { Box, IconButton } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import slider1 from '../../assets/DJI_0108-scaled-1 1.svg'
+import slider2 from '../../assets/image 11.svg'
+import slider3 from '../../assets/image 9.svg'
 
 // Image URLs
 const images = [
-  '/src/assets/DJI_0108-scaled-1 1.svg',
-  '/src/assets/image 11.svg',
-  '/src/assets/image 9.svg',
+  slider1,
+  slider2,
+  slider3,
 ];
 
 // Custom arrow components
