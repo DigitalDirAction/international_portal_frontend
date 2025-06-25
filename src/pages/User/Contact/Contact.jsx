@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
 
 const ContactForm = () => {
   const [formData, setFormData] = React.useState({
@@ -27,17 +29,52 @@ const ContactForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Data:", formData);
+
+    const payload = {
+      i_am: formData.role,
+      fullName: formData.fullName,
+      mobile_number: formData.mobileNumber,
+      email: formData.email,
+      message: formData.message,
+    };
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}contact`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Your message has been sent successfully!");
+
+      // Reset form
+      setFormData({
+        role: "",
+        fullName: "",
+        mobileNumber: "",
+        email: "",
+        message: "",
+      });
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Something went wrong. Please try again."
+      );
+      console.error("API Error:", error);
+    }
   };
+  
 
   return (
     <Box sx={{ mt: 10, p: 2, flex: 1 }}>
-      <Paper
-        elevation={3}
-        sx={{ px: 7, py: 10, borderRadius: 3, mx: "auto" }}
-      >
+      <Paper elevation={3} sx={{ px: 7, py: 10, borderRadius: 3, mx: "auto" }}>
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Typography
@@ -116,7 +153,6 @@ const ContactForm = () => {
                         height: '56px',
                         borderRadius: '4px',
                         fontSize: '16px',
-                        
                       }}
                       buttonStyle={{ borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }}
                     />
@@ -160,7 +196,13 @@ const ContactForm = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  sx={{ backgroundColor: "#790077", textTransform:"inherit", px: 5, py: 1.5, borderRadius: 2 }}
+                  sx={{
+                    backgroundColor: "#790077",
+                    textTransform: "inherit",
+                    px: 5,
+                    py: 1.5,
+                    borderRadius: 2,
+                  }}
                 >
                   Submit
                 </Button>

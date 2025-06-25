@@ -4,6 +4,8 @@ import { Box, Typography, Paper, Avatar, Grid, IconButton, Dialog, DialogTitle, 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import { CircularProgress } from '@mui/material';
+import Doc from '../../../assets/Doc.svg'
+
 
 const UserViewDetails = () => {
   const { applicationId } = useParams();
@@ -444,7 +446,7 @@ const UserViewDetails = () => {
                     >
                       <Box 
                         component="img" 
-                        src="/src/assets/Doc.svg" 
+                        src={Doc} 
                         alt="document icon"
                         sx={{
                           width: 22,
