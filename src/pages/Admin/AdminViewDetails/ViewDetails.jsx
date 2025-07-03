@@ -5,6 +5,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import { CircularProgress } from '@mui/material';
 import Doc from '../../../assets/Doc.svg'
+import { useRef } from 'react';
 
 const ViewDetails = () => {
   const { applicationId } = useParams();
@@ -23,6 +24,8 @@ const ViewDetails = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [programName, setProgramName] = useState('');
   const navigate = useNavigate();
+  const printRef = useRef();
+
 
 const handleOpenAcceptModal = () => setOpenAcceptModal(true);
 const handleCloseAcceptModal = () => setOpenAcceptModal(false);
@@ -169,6 +172,7 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
   }
 
   const { application, profile, education, exams, experiences, documents } = applicationData;
+  const profileImageDoc = documents?.find(doc => doc.type === 'profile_image');
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -183,6 +187,16 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
     ).join(' ');
   };
 
+  const handlePrint = () => {
+    const originalContents = document.body.innerHTML;
+    const printContents = printRef.current.innerHTML;
+  
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // Optional: to reset app after print
+  };  
+
   return (
     <Box sx={{ 
       display: "flex", 
@@ -196,6 +210,7 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
           overflow: 'auto', 
           borderRadius: '10px' 
         }}>
+          <Box ref={printRef}>
           {/* Header Section */}
           <Box sx={{ 
             display: "flex", 
@@ -282,10 +297,28 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
                 gap: 3 
               }}>
                 <Box sx={{display: 'flex', gap: 3, flexDirection: {xs: 'column', sm: 'row'}, alignItems: {sm: 'center'}}}>
-                <Avatar variant="square" sx={{ 
-                  width: { xs: 150, md: 200 }, 
-                  height: { xs: 150, md: 200 } 
-                }} />
+                {profileImageDoc ? (
+                  <Box
+                    component="img"
+                    src={profileImageDoc.file_path}
+                    alt="Profile"
+                    sx={{
+                      width: 'fit-content',
+                      maxWidth: { xs: 150, md: 200 },
+                      height: { xs: 150, md: 200 },
+                      objectFit: "cover",
+                      borderRadius: 1,
+                    }}
+                  />
+                ) : (
+                  <Avatar
+                    variant="square"
+                    sx={{
+                      width: { xs: 150, md: 200 },
+                      height: { xs: 150, md: 200 },
+                    }}
+                  />
+                )}
                 
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" sx={{fontSize:'14px', color: '#686868', fontWeight: 400}}>
@@ -558,6 +591,7 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
                   </Grid>
             </Grid>
           </Box>
+          </Box>
 
           {/* Footer Buttons */}
           <Box mt={7} mb={4} sx={{ 
@@ -569,9 +603,12 @@ const handleCloseRejectModal = () => setOpenRejectModal(false);
             marginBottom: {xs: '60px'}
           }}>
             <Box display="flex" alignItems="center" gap={1}>
-              <IconButton sx={{ color: '#790077', border: '1px solid #790077' }}>
-                <PrintOutlinedIcon />
-              </IconButton>
+            <IconButton 
+              sx={{ color: '#790077', border: '1px solid #790077' }} 
+              onClick={handlePrint}
+            >
+              <PrintOutlinedIcon />
+            </IconButton>
               <Typography sx={{ color: '#790077' }}>Print this Application</Typography>
             </Box>
             {application.status === "completed" || application.status === "rejected" ? '' :
