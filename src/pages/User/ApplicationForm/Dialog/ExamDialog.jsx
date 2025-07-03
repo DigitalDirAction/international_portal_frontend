@@ -13,6 +13,9 @@ import {
 import { Close, Edit, Delete } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -29,8 +32,10 @@ const ExamDialog = ({ open, handleClose, setIsExamAdded }) => {
   const [examList, setExamList] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
-  const isFormValid = Object.entries(formData)
-    .every(([, val]) => typeof val === "string" && val.trim());
+  const isFormValid = formData.name.trim() !== "" &&
+                    formData.score.trim() !== "" &&
+                    formData.exam_date instanceof Date &&
+                    !isNaN(formData.exam_date.getTime());
 
   // 🛠 Fetch exam data from API when dialog opens
   useEffect(() => {
@@ -48,8 +53,8 @@ const ExamDialog = ({ open, handleClose, setIsExamAdded }) => {
           id: exam.id || null,
           name: exam.name || "",
           score: exam.score || "",
-          exam_date: exam.exam_date || "",
-        }));
+          exam_date: exam.exam_date ? new Date(exam.exam_date) : null, // ✅ Convert string to Date
+        }));        
 
         setExamList(mappedExams);
         if (mappedExams.length > 0) {
@@ -69,8 +74,8 @@ const ExamDialog = ({ open, handleClose, setIsExamAdded }) => {
     const payload = {
       name: formData.name,
       score: formData.score,
-      exam_date: formData.exam_date,
-    };
+      exam_date: formData.exam_date ? formData.exam_date.toISOString().split('T')[0] : "", // Convert to "YYYY-MM-DD"
+    };    
 
     try {
       if (editIndex !== null) {
@@ -154,7 +159,10 @@ const ExamDialog = ({ open, handleClose, setIsExamAdded }) => {
                   {examList.map((exam, i) => (
                     <Box key={i} mb={1} p={1} border="1px solid #ccc" borderRadius="8px">
                       <Typography fontWeight={500} fontSize="14px">{exam.name}</Typography>
-                      <Typography fontSize="12px">Date: {exam.exam_date}</Typography>
+                      <Typography fontSize="12px">
+                        Date: {exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : "N/A"}
+                      </Typography>
+
                       <Typography fontSize="12px">Score: {exam.score}</Typography>
                       <Box mt={1} display="flex" justifyContent="flex-end" gap={1}>
                         <IconButton onClick={() => handleEdit(i)} size="small">
@@ -191,17 +199,15 @@ const ExamDialog = ({ open, handleClose, setIsExamAdded }) => {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Exam date"
-                    select
-                    fullWidth
-                    value={formData.exam_date}
-                    onChange={(e) => setFormData({ ...formData, exam_date: e.target.value })}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month} value={month}>{month}</MenuItem>
-                    ))}
-                  </TextField>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Exam Date"
+                      value={formData.exam_date}
+                      onChange={(newValue) => setFormData({ ...formData, exam_date: newValue })}
+                      renderInput={(params) => <TextField fullWidth {...params} />}
+                      sx={{width: "100%"}}
+                    />
+                  </LocalizationProvider>
                 </Grid>
               </Grid>
 

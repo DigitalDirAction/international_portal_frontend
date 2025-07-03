@@ -13,6 +13,9 @@ import {
 import { Close, Edit, Delete } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -26,16 +29,20 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
     degree: "",
     field: "",
     grade: "",
-    start: "",
-    end: "",
+    start: null,
+    end: null,
     description: ""
-  });
+  });  
   const [educationList, setEducationList] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
   const isFormValid = Object.entries(formData)
-  .filter(([key]) => key !== "id") // Skip checking 'id'
-  .every(([, val]) => typeof val === "string" && val.trim());
+  .filter(([key]) => key !== "id")
+  .every(([key, val]) => {
+    if (key === "start" || key === "end") return val instanceof Date;
+    return typeof val === "string" && val.trim();
+  });
+
 
 
   // Fetch existing education when dialog opens
@@ -53,15 +60,16 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
         const educationData = response.data.data.education || [];
         
         const formattedData = educationData.map((edu) => ({
-          id: edu.id || null, // 🎯 Here id is captured from get_application API
+          id: edu.id || null,
           institute: edu.institution || "",
           degree: edu.degree || "",
           field: edu.field_of_study || "",
           grade: edu.grade || "",
-          start: edu.start_date || "",
-          end: edu.end_date || "",
+          start: edu.start_date ? new Date(edu.start_date) : null,
+          end: edu.end_date ? new Date(edu.end_date) : null,
           description: edu.description || "",
         }));
+        
         
 
         setEducationList(formattedData);
@@ -80,17 +88,32 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
   const handleAddOrUpdateEducation = async () => {
     const token = localStorage.getItem("token");
 
+    const formatDate = (date) => {
+      if (!(date instanceof Date)) return null;
+      return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
+    };
+    
     const payload = {
       institution: formData.institute,
       degree: formData.degree,
       field_of_study: formData.field,
       grade: formData.grade,
-      start_date: formData.start,
-      end_date: formData.end,
+      start_date: formatDate(formData.start),
+      end_date: formatDate(formData.end),
       description: formData.description,
     };
 
     try {
+      if (!formData.start || !formData.end) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+      
+      if (formData.start > formData.end) {
+        alert("Start date must be before End date.");
+        return;
+      }
+      
       if (editIndex !== null) {
         const id = educationList[editIndex].id;
         await axios.put(`${import.meta.env.VITE_BASE_URL}admission/education/${id}`, payload, {
@@ -123,8 +146,8 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
         degree: "",
         field: "",
         grade: "",
-        start: "",
-        end: "",
+        start: null,
+        end: null,
         description: "",
       });
       setShowForm(false);
@@ -134,10 +157,16 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
   };
 
   const handleEdit = (index) => {
-    setFormData(educationList[index]);
+    const data = educationList[index];
+    setFormData({
+      ...data,
+      start: data.start ? new Date(data.start) : null,
+      end: data.end ? new Date(data.end) : null,
+    });
     setEditIndex(index);
     setShowForm(true);
   };
+  
 
   const handleDelete = (index) => {
     const updated = educationList.filter((_, i) => i !== index);
@@ -184,7 +213,11 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
                     <Box key={i} mb={1} p={1} border="1px solid #ccc" borderRadius="8px">
                       <Typography fontWeight={500} fontSize="14px">{edu.institute}</Typography>
                       <Typography fontSize="12px">{edu.degree}</Typography>
-                      <Typography variant="body2" fontSize="12px">{edu.start} - {edu.end}</Typography>
+                      <Typography variant="body2" fontSize="12px">
+                        {edu.start instanceof Date ? edu.start.toLocaleDateString() : edu.start} - 
+                        {edu.end instanceof Date ? edu.end.toLocaleDateString() : edu.end}
+                      </Typography>
+
                       <Typography variant="body2" fontSize="12px">Grade: {edu.grade}</Typography>
                       <Box mt={1} display="flex" justifyContent="flex-end" gap={1}>
                         <IconButton onClick={() => handleEdit(i)} size="small">
@@ -203,6 +236,7 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
 
           {showForm && (
             <Box mt={2}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -241,30 +275,25 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Start date"
-                    select
-                    fullWidth
+                  <DatePicker
+                    label="Start Date"
                     value={formData.start}
-                    onChange={(e) => setFormData({ ...formData, start: e.target.value })}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month} value={month}>{month}</MenuItem>
-                    ))}
-                  </TextField>
+                    onChange={(newValue) => setFormData({ ...formData, start: newValue })}
+                    maxDate={formData.end || undefined}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    sx={{width: "100%"}}
+                  />
                 </Grid>
+
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="End date"
-                    select
-                    fullWidth
+                  <DatePicker
+                    label="End Date"
                     value={formData.end}
-                    onChange={(e) => setFormData({ ...formData, end: e.target.value })}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month} value={month}>{month}</MenuItem>
-                    ))}
-                  </TextField>
+                    onChange={(newValue) => setFormData({ ...formData, end: newValue })}
+                    minDate={formData.start || undefined}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    sx={{width: "100%"}}
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -278,6 +307,7 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
                   />
                 </Grid>
               </Grid>
+              </LocalizationProvider>
 
               <Box mt={4} display="flex" justifyContent="flex-end" gap={2}>
                 <Button

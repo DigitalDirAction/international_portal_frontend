@@ -53,6 +53,14 @@ const MyApplications = () => {
     fetchApplications();
   }, []);
 
+  const formatLabel = (text) => {
+    if (!text) return "";
+    return text
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   const isEligibleToApply = applications.some(
     (app) =>
       app.status.toLowerCase() === "completed" ||
@@ -121,13 +129,13 @@ const MyApplications = () => {
               {applications.map((app) => (
                 <TableRow key={app.id}>
                   <TableCell sx={{ padding: "10px 16px" }}>{app.id}</TableCell>
-                  <TableCell sx={{ padding: "10px 16px" }}>{app.application_type}</TableCell>
+                  <TableCell sx={{ padding: "10px 16px" }}>{formatLabel(app.application_type)}</TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     {new Date(app.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell sx={{ padding: "10px 16px" }}>
                     <Chip
-                      label={app.status}
+                      label={formatLabel(app.status)}
                       sx={{
                         color: app.status === "Completed" ? "#00B69B" : "#FFA756",
                         backgroundColor: app.status === "Completed" ? "#4affe438" : "#ffc99645",

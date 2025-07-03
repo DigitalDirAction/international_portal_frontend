@@ -15,6 +15,9 @@ import {
 import { Close, Edit, Delete } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -32,19 +35,32 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
   const [formData, setFormData] = useState({
     company: "",
     position: "",
-    startMonth: "",
+    startDate: null,
     endMonth: "",
     endYear: "",
     description: "",
     id: null, // ✅ Capture ID for edit
   });
 
+  const isEndDateValid = () => {
+    if (currentlyWorking || !formData.startDate || !formData.endMonth || !formData.endYear) return true;
+  
+    const endMonthIndex = months.indexOf(formData.endMonth);
+    const endYear = parseInt(formData.endYear);
+    const endDate = new Date(endYear, endMonthIndex);
+  
+    // Compare with start date (set day to 1 for safe comparison)
+    return endDate >= new Date(formData.startDate.getFullYear(), formData.startDate.getMonth());
+  };
+  
+
   const isFormValid =
-    formData.company?.trim() &&
-    formData.position?.trim() &&
-    formData.startMonth?.trim() &&
-    (currentlyWorking || (formData.endMonth?.trim() && formData.endYear?.trim())) &&
-    formData.description?.trim();
+  formData.company?.trim() &&
+  formData.position?.trim() &&
+  formData.startDate instanceof Date && !isNaN(formData.startDate.getTime()) &&
+  (currentlyWorking || (formData.endMonth?.trim() && formData.endYear?.trim())) &&
+  isEndDateValid() &&
+  formData.description?.trim();
 
   // 🛠 Fetch experience when dialog opens
   useEffect(() => {
@@ -64,7 +80,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
           id: exp.id || null,
           company: exp.company || "",
           position: exp.position || "",
-          startMonth: exp.start_date || "",
+          startDate: exp.start_date ? new Date(exp.start_date) : null,
           endMonth: exp.end_date?.split(" ")[0] || "",
           endYear: exp.end_date?.split(" ")[1] || "",
           currentlyWorking: exp.currently_work_here === "yes",
@@ -89,7 +105,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
     const payload = {
       company: formData.company,
       position: formData.position,
-      start_date: formData.startMonth,
+      start_date: formData.startDate?.toISOString().split("T")[0],
       end_date: currentlyWorking ? "Present" : `${formData.endMonth} ${formData.endYear}`,
       currently_work_here: currentlyWorking ? "yes" : "no",
       description: formData.description,
@@ -105,7 +121,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
         });
 
         const updated = [...experienceList];
-        updated[editIndex] = { ...formData, id };
+        updated[editIndex] = { ...formData, currentlyWorking, id };
         setExperienceList(updated);
         setEditIndex(null);
       } else {
@@ -116,7 +132,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
         });
 
         const newRecord = response.data.data;
-        setExperienceList([...experienceList, { id: newRecord.id, ...formData }]);
+        setExperienceList([...experienceList, { id: newRecord.id, ...formData, currentlyWorking }]);
       }
 
       setIsExperienceAdded(true);
@@ -131,7 +147,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
     setFormData({
       company: exp.company ?? "",
       position: exp.position ?? "",
-      startMonth: exp.startMonth ?? "",
+      startDate: exp.startDate ? new Date(exp.startDate) : null,
       endMonth: exp.endMonth ?? "",
       endYear: exp.endYear ?? "",
       description: exp.description ?? "",
@@ -140,7 +156,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
     setCurrentlyWorking(exp.currentlyWorking || false);
     setEditIndex(index);
     setShowForm(true);
-  };
+  };  
 
   const handleDelete = (index) => {
     const updated = experienceList.filter((_, i) => i !== index);
@@ -151,7 +167,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
     setFormData({
       company: "",
       position: "",
-      startMonth: "",
+      startDate: null,
       endMonth: "",
       endYear: "",
       description: "",
@@ -204,7 +220,11 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
                     <Box key={i} mb={2} p={2} border="1px solid #ccc" borderRadius="8px" position="relative">
                       <Typography fontWeight={500}>{exp.position} at {exp.company}</Typography>
                       <Typography fontSize="12px">
-                        {exp.startMonth} - {exp.currentlyWorking ? "Present" : `${exp.endMonth} ${exp.endYear}`}
+                        {exp.startDate ? new Date(exp.startDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }) : "N/A"} - {exp.currentlyWorking ? "Present" : `${exp.endMonth} ${exp.endYear}`}
                       </Typography>
                       <Typography fontSize="12px">{exp.description}</Typography>
 
@@ -241,20 +261,17 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Start Month"
-                    select
-                    fullWidth
-                    value={formData.startMonth}
-                    onChange={(e) => setFormData({ ...formData, startMonth: e.target.value })}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month} value={month}>
-                        {month}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Start Date"
+                      value={formData.startDate}
+                      onChange={(newDate) => setFormData({ ...formData, startDate: newDate })}
+                      renderInput={(params) => <TextField fullWidth {...params} />}
+                      sx={{width: "100%"}}
+                    />
+                  </LocalizationProvider>
                 </Grid>
+
 
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -264,6 +281,8 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
                     disabled={currentlyWorking}
                     value={formData.endMonth}
                     onChange={(e) => setFormData({ ...formData, endMonth: e.target.value })}
+                    error={!isEndDateValid()}
+                    helperText={!isEndDateValid() ? "End date cannot be before start date" : ""}
                   >
                     {months.map((month) => (
                       <MenuItem key={month} value={month}>
@@ -293,6 +312,8 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
                       fullWidth
                       value={formData.endYear}
                       onChange={(e) => setFormData({ ...formData, endYear: e.target.value })}
+                      error={!isEndDateValid()}
+                      helperText={!isEndDateValid() ? "End year cannot be before start date" : ""}
                     >
                       {years.map((year) => (
                         <MenuItem key={year} value={year}>
@@ -338,6 +359,20 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
             </Box>
           )}
         </DialogContent>
+        {!showForm && (
+          <Box mt={4} display="flex" justifyContent="flex-end">
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{
+                backgroundColor: "#790077",
+                color: "white",
+              }}
+            >
+              Done
+            </Button>
+          </Box>
+        )}
       </Box>
     </Dialog>
   );
