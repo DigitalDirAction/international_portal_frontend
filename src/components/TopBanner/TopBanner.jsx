@@ -67,7 +67,7 @@ const CarouselSlider = () => {
   };
 
   return (
-    <Box width="100%" maxWidth="1400px" mx="auto" borderRadius={4} overflow="hidden">
+    <Box width="100%" mx="auto" borderRadius={4} overflow="hidden">
       <Slider {...settings}>
         {images.map((src, index) => (
           <Box
