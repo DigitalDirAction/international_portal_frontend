@@ -1,18 +1,55 @@
-// src/components/ApplicationForm/Step6_ContactDetails.jsx
 import {
   Box,
   Typography,
   Grid,
   TextField,
   MenuItem,
-  Button,
 } from "@mui/material";
-import { KeyboardBackspace, East } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+import { City, Country } from "country-state-city";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/material.css";
 
-const countries = ["Pakistan", "United States", "Canada", "India", "United Kingdom"];
-const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Multan"];
+// Register English locale
+countries.registerLocale(enLocale);
 
-const Step6 = ({ formData, setFormData}) => {
+const Step6 = ({ formData, setFormData }) => {
+  const [countryList, setCountryList] = useState([]);
+  const [cityList, setCityList] = useState([]);
+
+  useEffect(() => {
+    const allCountries = Country.getAllCountries();
+    setCountryList(allCountries);
+  }, []);
+
+  useEffect(() => {
+    const selectedCountry = countryList.find(
+      (c) => c.name === formData.contactCountry
+    );
+  
+    if (selectedCountry) {
+      setFormData((prev) => ({
+        ...prev,
+        contactCountryCode: selectedCountry.isoCode,
+      }));
+  
+      const cities = City.getCitiesOfCountry(selectedCountry.isoCode);
+      setCityList(cities || []);
+    }
+  }, [countryList, formData.contactCountry]);  
+
+  const handleCountryChange = (e) => {
+    const selectedCountry = countryList.find(c => c.name === e.target.value);
+    setFormData({
+      ...formData,
+      contactCountry: selectedCountry.name,
+      contactCountryCode: selectedCountry.isoCode,
+      city: "", // reset city on country change
+    });
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h5" textAlign="center" mb={5} sx={{ color: "#202224" }}>
@@ -48,12 +85,11 @@ const Step6 = ({ formData, setFormData}) => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <TextField
-            label="Phone Number"
-            fullWidth
-            InputProps={{ startAdornment: <Box mr={1}>🇵🇰 +92</Box> }}
+          <PhoneInput
+            country={'pk'}
             value={formData.phone || ""}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            onChange={(phone) => setFormData({ ...formData, phone })}
+            inputStyle={{ width: '100%' }}
           />
         </Grid>
 
@@ -69,13 +105,15 @@ const Step6 = ({ formData, setFormData}) => {
         <Grid item xs={12} md={6}>
           <TextField
             select
-            label="City"
+            label="Country"
             fullWidth
-            value={formData.city || ""}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            value={formData.contactCountry || ""}
+            onChange={handleCountryChange}
           >
-            {cities.map((city) => (
-              <MenuItem key={city} value={city}>{city}</MenuItem>
+            {countryList.map((country) => (
+              <MenuItem key={country.isoCode} value={country.name}>
+                {country.name}
+              </MenuItem>
             ))}
           </TextField>
         </Grid>
@@ -83,39 +121,24 @@ const Step6 = ({ formData, setFormData}) => {
         <Grid item xs={12} md={6}>
           <TextField
             select
-            label="Country"
+            label="City"
             fullWidth
-            value={formData.contactCountry || ""}
-            onChange={(e) => setFormData({ ...formData, contactCountry: e.target.value })}
+            value={formData.city || ""}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            disabled={!formData.contactCountryCode}
           >
-            {countries.map((c) => (
-              <MenuItem key={c} value={c}>{c}</MenuItem>
-            ))}
+            {cityList.length > 0 ? (
+              cityList.map((city) => (
+                <MenuItem key={city.name} value={city.name}>
+                  {city.name}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem value="">No cities found</MenuItem>
+            )}
           </TextField>
         </Grid>
       </Grid>
-
-      {/* <Box p={5} mt={1} display="flex" justifyContent="space-between">
-        <Button
-          sx={{ backgroundColor: "#DBDBDB", textTransform: "none", gap: 1, color: "#404040", px: 2 }}
-          onClick={handleBack}
-        >
-          <KeyboardBackspace
-            sx={{ border: "1px solid #404040", borderRadius: "50%", padding: "3px", fontSize: "13px", color: "#404040" }}
-          />
-          Back
-        </Button>
-
-        <Button
-          onClick={handleNext}
-          sx={{ backgroundColor: "#790077", textTransform: "none", gap: 1, color: "white", px: 2 }}
-        >
-          Next
-          <East
-            sx={{ border: "1px solid white", borderRadius: "50%", padding: "3px", fontSize: "13px", color: "white" }}
-          />
-        </Button>
-      </Box> */}
     </Box>
   );
 };

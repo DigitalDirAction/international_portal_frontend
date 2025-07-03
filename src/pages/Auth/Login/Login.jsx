@@ -10,11 +10,17 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { IconButton, InputAdornment } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
 
 const Login = () => {
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
 
 const handleLogin = async () => {
   try {
@@ -120,12 +126,21 @@ const handleLogin = async () => {
           <TextField
             fullWidth
             placeholder="********"
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             margin="dense"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputProps={{ sx: { borderRadius: 2, backgroundColor: "#fff" } }}
+            InputProps={{
+              sx: { borderRadius: 2, backgroundColor: "#fff" },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
 

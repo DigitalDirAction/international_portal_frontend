@@ -1,18 +1,49 @@
-// src/components/ApplicationForm/Step5_StudentDetails.jsx
 import {
   Box,
   Typography,
   Grid,
   TextField,
   MenuItem,
-  Button,
 } from "@mui/material";
-import { KeyboardBackspace, East } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+import toast from "react-hot-toast";
+
+// Register English locale
+countries.registerLocale(enLocale);
 
 const genders = ["Male", "Female", "Other"];
-const countries = ["Pakistan", "United States", "Canada", "India", "United Kingdom"];
+const allCountries = Object.values(countries.getNames("en"));
 
-const Step5 = ({ formData, setFormData}) => {
+const Step5 = ({ formData, setFormData }) => {
+  const [countryList, setCountryList] = useState([]);
+
+  useEffect(() => {
+    setCountryList(allCountries);
+  }, []);
+
+  // Validate passport dates
+  const handlePassportIssueChange = (value) => {
+    const issueDate = new Date(value);
+    const expiryDate = new Date(formData.passportExpiryDate);
+    if (formData.passportExpiryDate && issueDate > expiryDate) {
+      toast.error("Passport issue date cannot be after expiry date");
+      return;
+    }
+    setFormData({ ...formData, passportIssueDate: value });
+  };
+
+  const handlePassportExpiryChange = (value) => {
+    const issueDate = new Date(formData.passportIssueDate);
+    const expiryDate = new Date(value);
+    if (formData.passportIssueDate && expiryDate < issueDate) {
+      toast.error("Passport expiry date cannot be before issue date");
+      return;
+    }
+    setFormData({ ...formData, passportExpiryDate: value });
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h5" textAlign="center" mb={5} sx={{ color: "#202224" }}>
@@ -73,7 +104,7 @@ const Step5 = ({ formData, setFormData}) => {
             value={formData.citizenship || ""}
             onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
           >
-            {countries.map((c) => (
+            {countryList.map((c) => (
               <MenuItem key={c} value={c}>{c}</MenuItem>
             ))}
           </TextField>
@@ -87,7 +118,7 @@ const Step5 = ({ formData, setFormData}) => {
             value={formData.secondaryCitizenship || ""}
             onChange={(e) => setFormData({ ...formData, secondaryCitizenship: e.target.value })}
           >
-            {countries.map((c) => (
+            {countryList.map((c) => (
               <MenuItem key={c} value={c}>{c}</MenuItem>
             ))}
           </TextField>
@@ -109,7 +140,7 @@ const Step5 = ({ formData, setFormData}) => {
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={formData.passportIssueDate || ""}
-            onChange={(e) => setFormData({ ...formData, passportIssueDate: e.target.value })}
+            onChange={(e) => handlePassportIssueChange(e.target.value)}
           />
         </Grid>
 
@@ -120,7 +151,7 @@ const Step5 = ({ formData, setFormData}) => {
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={formData.passportExpiryDate || ""}
-            onChange={(e) => setFormData({ ...formData, passportExpiryDate: e.target.value })}
+            onChange={(e) => handlePassportExpiryChange(e.target.value)}
           />
         </Grid>
 
@@ -132,34 +163,12 @@ const Step5 = ({ formData, setFormData}) => {
             value={formData.passportCountry || ""}
             onChange={(e) => setFormData({ ...formData, passportCountry: e.target.value })}
           >
-            {countries.map((c) => (
+            {countryList.map((c) => (
               <MenuItem key={c} value={c}>{c}</MenuItem>
             ))}
           </TextField>
         </Grid>
       </Grid>
-
-      {/* <Box p={5} mt={1} display="flex" justifyContent="space-between">
-        <Button
-          sx={{ backgroundColor: "#DBDBDB", textTransform: "none", gap: 1, color: "#404040", px: 2 }}
-          onClick={handleBack}
-        >
-          <KeyboardBackspace
-            sx={{ border: "1px solid #404040", borderRadius: "50%", padding: "3px", fontSize: "13px", color: "#404040" }}
-          />
-          Back
-        </Button>
-
-        <Button
-          onClick={handleNext}
-          sx={{ backgroundColor: "#790077", textTransform: "none", gap: 1, color: "white", px: 2 }}
-        >
-          Next
-          <East
-            sx={{ border: "1px solid white", borderRadius: "50%", padding: "3px", fontSize: "13px", color: "white" }}
-          />
-        </Button>
-      </Box> */}
     </Box>
   );
 };

@@ -67,7 +67,7 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-        width: 250,
+        width: "20%",
         bgcolor: "#fff",
         height: "100vh",
         display: "flex",

@@ -9,12 +9,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { IconButton, InputAdornment } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const UserID = localStorage.getItem('resetPasswordID')
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleReset = async () => {
     if (!password || !confirmPassword) {
@@ -86,13 +92,22 @@ const ResetPassword = () => {
           </Typography>
           <TextField
             fullWidth
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             label="********"
             margin="dense"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputProps={{ sx: { borderRadius: 2, backgroundColor: "#fff" } }}
+            InputProps={{
+              sx: { borderRadius: 2, backgroundColor: "#fff" },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
 
@@ -105,13 +120,22 @@ const ResetPassword = () => {
           </Typography>
           <TextField
             fullWidth
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             variant="outlined"
             label="********"
             margin="dense"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            InputProps={{ sx: { borderRadius: 2, backgroundColor: "#fff" } }}
+            InputProps={{
+              sx: { borderRadius: 2, backgroundColor: "#fff" },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
 

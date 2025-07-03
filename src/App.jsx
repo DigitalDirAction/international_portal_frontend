@@ -23,6 +23,9 @@ import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
 import AllApplications from "./pages/Admin/AllApplications/AllApplications";
 import AdminProfilePage from "./pages/Admin/AdminProfile/AdminProfile";
 import UserViewDetails from "./pages/User/UserViewDetails/UserViewDetails";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -44,7 +47,7 @@ const App = () => {
         {/* ✅ Show sidebar only on larger screens */}
         {!isSmallScreen && token && <Sidebar />}
 
-        <Box width="100%" minHeight="100vh" sx={{ backgroundColor: "#e0e0e0" }}>
+        <Box width={isSmallScreen? "100%" : "80%"} minHeight="100vh" sx={{ backgroundColor: "#e0e0e0" }}>
           <Routes>
             {/* Public Routes */}
             <Route
