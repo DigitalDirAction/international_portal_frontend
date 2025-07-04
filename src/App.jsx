@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom"; // ✅ import this
 import Login from "./pages/Auth/Login/Login";
 import Signup from "./pages/Auth/Signup/Signup";
 import ForgetPassword from "./pages/Auth/ForgetPassword/ForgetPassword";
@@ -29,9 +30,13 @@ import "slick-carousel/slick/slick-theme.css";
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
-
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const location = useLocation(); // ✅ get current path
+
+  // ✅ Define public routes
+  const publicRoutes = ["/", "/register", "/forget-password", "/otp", "/reset-password"];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
 
   useEffect(() => {
     const checkToken = () => setToken(localStorage.getItem("token"));
@@ -47,7 +52,11 @@ const App = () => {
         {/* ✅ Show sidebar only on larger screens */}
         {!isSmallScreen && token && <Sidebar />}
 
-        <Box width={isSmallScreen? "100%" : "80%"} minHeight="100vh" sx={{ backgroundColor: "#e0e0e0" }}>
+        <Box
+          width={isPublicRoute || isSmallScreen ? "100%" : "80%"}
+          minHeight="100vh"
+          sx={{ backgroundColor: "#e0e0e0" }}
+        >
           <Routes>
             {/* Public Routes */}
             <Route
