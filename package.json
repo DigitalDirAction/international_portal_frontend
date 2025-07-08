@@ -17,6 +17,7 @@
     "@mui/material": "^6.4.11",
     "@mui/x-date-pickers": "^8.6.0",
     "axios": "^1.8.4",
+    "classnames": "^2.5.1",
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "i18n-iso-countries": "^7.14.0",

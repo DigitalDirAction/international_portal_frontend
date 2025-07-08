@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/material.css";
 
 const AdminProfilePage = () => {
   const [formData, setFormData] = React.useState({
@@ -24,7 +26,6 @@ const AdminProfilePage = () => {
 
   const fileInputRef = React.useRef();
 
-  // Fetch profile data on mount
   React.useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("token");
@@ -39,19 +40,16 @@ const AdminProfilePage = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-  
-        if (response.data && response.data.data) {
+
+        if (response.data?.data) {
           const data = response.data.data;
-  
-          // Example: API returns relative path like 'profile_image': '/media/profile.jpg'
-          // Adjust base URL accordingly
-          const baseMediaUrl = import.meta.env.VITE_BASE_URL; // or your media base URL
+          const baseMediaUrl = import.meta.env.VITE_BASE_URL;
           const profileImageUrl = data.profile_image
             ? (data.profile_image.startsWith("http")
               ? data.profile_image
               : baseMediaUrl + data.profile_image)
             : "https://cdn-icons-png.flaticon.com/512/706/706830.png";
-  
+
           setFormData((prev) => ({
             ...prev,
             fullName: data.full_name || "",
@@ -68,13 +66,31 @@ const AdminProfilePage = () => {
         console.error("Fetch profile error:", error.response?.data || error.message);
       }
     };
-  
+
     fetchProfile();
   }, []);
-  
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "cnic") {
+      let digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length > 13) digitsOnly = digitsOnly.slice(0, 13);
+      let formatted = digitsOnly;
+      if (digitsOnly.length > 5) {
+        formatted = digitsOnly.slice(0, 5) + '-' + digitsOnly.slice(5);
+      }
+      if (digitsOnly.length > 12) {
+        formatted = digitsOnly.slice(0, 5) + '-' + digitsOnly.slice(5, 12) + '-' + digitsOnly.slice(12);
+      }
+      setFormData((prev) => ({ ...prev, [name]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handlePhoneChange = (value) => {
+    setFormData((prev) => ({ ...prev, mobileNumber: value }));
   };
 
   const handleImageChange = (e) => {
@@ -91,23 +107,36 @@ const AdminProfilePage = () => {
   const handleSave = async () => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
-  
+
     if (!userId || !token) {
       toast.error("Missing user ID or authentication token.");
       return;
     }
-  
+
+    // CNIC validation
+    if (!/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic)) {
+      toast.error("Invalid CNIC format");
+      return;
+    }
+
+    // Clean phone number
+    const cleanedPhone = formData.mobileNumber.replace(/[^\d+]/g, "");
+    if (!/^\+\d{10,15}$/.test(cleanedPhone)) {
+      toast.error("Invalid mobile number format");
+      return;
+    }
+
     const formPayload = new FormData();
     formPayload.append("user_id", userId);
     formPayload.append("full_name", formData.fullName);
     formPayload.append("email", formData.email);
     formPayload.append("cnic", formData.cnic);
-    formPayload.append("mobile_number", formData.mobileNumber);
-  
+    formPayload.append("mobile_number", cleanedPhone);
+
     if (formData.profileImageFile) {
       formPayload.append("profile_image", formData.profileImageFile);
     }
-  
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}set_profile`,
@@ -119,24 +148,17 @@ const AdminProfilePage = () => {
           },
         }
       );
-  
-      // Check for validation errors in response
-      if (response.data.status && response.data.status === 422) {
-        // Show all validation error messages
-        if (response.data.errors) {
-          Object.values(response.data.errors).forEach((errArr) => {
-            errArr.forEach((errMsg) => toast.error(errMsg));
-          });
-        } else {
-          toast.error(response.data.message || "Validation errors");
-        }
-        return; // stop further success toast
+
+      if (response.data.status === 422) {
+        const errors = response.data.errors || {};
+        Object.values(errors).forEach((errArr) => {
+          errArr.forEach((errMsg) => toast.error(errMsg));
+        });
+        return;
       }
-  
-      // Otherwise, success
+
       toast.success("Profile saved successfully");
     } catch (error) {
-      // Handle errors thrown by axios or server
       if (error.response?.status === 422 && error.response.data.errors) {
         Object.values(error.response.data.errors).forEach((errArr) => {
           errArr.forEach((errMsg) => toast.error(errMsg));
@@ -147,8 +169,6 @@ const AdminProfilePage = () => {
       console.error("Error saving profile:", error.response?.data || error.message);
     }
   };
-  
-  
 
   const handleCancel = () => {
     toast.info("Changes cancelled");
@@ -208,14 +228,36 @@ const AdminProfilePage = () => {
               name="cnic"
               value={formData.cnic}
               onChange={handleChange}
+              placeholder="xxxxx-xxxxxxx-x"
             />
-            <TextField
-              fullWidth
-              label="Mobile Number"
-              name="mobileNumber"
-              value={formData.mobileNumber}
-              onChange={handleChange}
-            />
+
+            {/* Phone field with z-index label */}
+            <Box sx={{ position: "relative" }}>
+              <Typography
+                sx={{
+                  position: "absolute",
+                  top: "-10px",
+                  left: "12px",
+                  background: "#fff",
+                  zIndex: 20,
+                  fontSize: 13,
+                  color: "rgba(0, 0, 0, 0.6)",
+                  px: 0.5,
+                }}
+              >
+                Mobile Number
+              </Typography>
+              <PhoneInput
+                country={"pk"}
+                value={formData.mobileNumber}
+                onChange={handlePhoneChange}
+                inputStyle={{ width: "100%", height: "56px" }}
+                inputProps={{
+                  name: "mobileNumber",
+                  required: true,
+                }}
+              />
+            </Box>
           </Stack>
 
           <Grid container spacing={2} mt={4}>
