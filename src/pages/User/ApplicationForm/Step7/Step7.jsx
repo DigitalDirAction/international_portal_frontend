@@ -127,6 +127,7 @@ const Step7 = ({ selectedEducation, setSelectedEducation }) => {
         
             {/* Move IconButton OUTSIDE CardActionArea */}
             <IconButton
+              onClick={() => handleOpen(option.label)} // 🔥 Add this line
               sx={{
                 position: "absolute",
                 bottom: 10,
@@ -136,12 +137,14 @@ const Step7 = ({ selectedEducation, setSelectedEducation }) => {
                 width: 30,
                 height: 30,
                 "&:hover": {
-                  backgroundColor: getIconColor(option.label) === "green" ? "#0b850b" : "#5e005f",
+                  backgroundColor:
+                    getIconColor(option.label) === "green" ? "#0b850b" : "#5e005f",
                 },
               }}
             >
-              {getIcon(option.label)}
-            </IconButton>
+  {getIcon(option.label)}
+</IconButton>
+
           </Card>
         </Grid>        
         ))}
