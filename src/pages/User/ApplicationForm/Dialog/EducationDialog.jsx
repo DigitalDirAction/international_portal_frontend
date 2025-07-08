@@ -24,6 +24,8 @@ const months = [
 
 const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
   const [showForm, setShowForm] = useState(false);
+  const [deleteIndex, setDeleteIndex] = useState(null);
+const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [formData, setFormData] = useState({
     institute: "",
     degree: "",
@@ -168,10 +170,40 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
   };
   
 
-  const handleDelete = (index) => {
-    const updated = educationList.filter((_, i) => i !== index);
-    setEducationList(updated);
+  const handleDeleteConfirm = async () => {
+    if (deleteIndex === null) return;
+  
+    const token = localStorage.getItem("token");
+    const education = educationList[deleteIndex];
+  
+    try {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}education/${education.id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const updated = educationList.filter((_, i) => i !== deleteIndex);
+      setEducationList(updated);
+      setDeleteIndex(null);
+      setConfirmDeleteOpen(false);
+  
+      if (updated.length === 0) {
+        setIsEducationAdded(false);
+      }
+    } catch (error) {
+      console.error("Failed to delete education:", error.response?.data || error.message);
+      alert("Failed to delete education. Please try again.");
+      setConfirmDeleteOpen(false);
+    }
   };
+  
+  const handleDeleteClick = (index) => {
+    setDeleteIndex(index);
+    setConfirmDeleteOpen(true);
+  };
+  
+  
 
   return (
     <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose} sx={{ borderRadius: "15px" }}>
@@ -223,7 +255,7 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
                         <IconButton onClick={() => handleEdit(i)} size="small">
                           <Edit fontSize="small" />
                         </IconButton>
-                        <IconButton onClick={() => handleDelete(i)} size="small">
+                        <IconButton onClick={() => handleDeleteClick(i)} size="small">
                           <Delete fontSize="small" />
                         </IconButton>
                       </Box>
@@ -362,6 +394,33 @@ const EducationDialog = ({ open, handleClose, setIsEducationAdded }) => {
             </Button>
           </Box>
         )}
+
+        <Dialog
+          open={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+        >
+          <Box p={3} maxWidth="400px">
+            <Typography variant="h6" mb={2}>
+              Confirm Deletion
+            </Typography>
+            <Typography mb={3}>
+              Are you sure you want to delete this education record? This action cannot be undone.
+            </Typography>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <Button onClick={() => setConfirmDeleteOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleDeleteConfirm}
+                sx={{ backgroundColor: "#790077", color: "#fff" }}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Box>
+        </Dialog>
+
       </Box>
     </Dialog>
   );

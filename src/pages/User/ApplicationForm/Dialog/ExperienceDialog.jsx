@@ -31,6 +31,9 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
   const [experienceList, setExperienceList] = useState([]);
   const [currentlyWorking, setCurrentlyWorking] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [deleteIndex, setDeleteIndex] = useState(null);
+const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
 
   const [formData, setFormData] = useState({
     company: "",
@@ -158,10 +161,39 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
     setShowForm(true);
   };  
 
-  const handleDelete = (index) => {
-    const updated = experienceList.filter((_, i) => i !== index);
-    setExperienceList(updated);
+  const handleDeleteClick = (index) => {
+    setDeleteIndex(index);
+    setConfirmDeleteOpen(true);
   };
+  
+  const handleDeleteConfirm = async () => {
+    if (deleteIndex === null) return;
+  
+    const token = localStorage.getItem("token");
+    const experience = experienceList[deleteIndex];
+  
+    try {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}experience/${experience.id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const updated = experienceList.filter((_, i) => i !== deleteIndex);
+      setExperienceList(updated);
+      setDeleteIndex(null);
+      setConfirmDeleteOpen(false);
+  
+      if (updated.length === 0) {
+        setIsExperienceAdded(false);
+      }
+    } catch (error) {
+      console.error("Failed to delete experience:", error.response?.data || error.message);
+      alert("Failed to delete experience. Please try again.");
+      setConfirmDeleteOpen(false);
+    }
+  };
+  
 
   const resetForm = () => {
     setFormData({
@@ -232,7 +264,7 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
                         <IconButton size="small" onClick={() => handleEdit(i)}>
                           <Edit fontSize="small" />
                         </IconButton>
-                        <IconButton size="small" onClick={() => handleDelete(i)}>
+                        <IconButton size="small" onClick={() => handleDeleteClick(i)}>
                           <Delete fontSize="small" />
                         </IconButton>
                       </Box>
@@ -373,6 +405,32 @@ const ExperienceDialog = ({ open, handleClose, setIsExperienceAdded }) => {
             </Button>
           </Box>
         )}
+        <Dialog
+          open={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+        >
+          <Box p={3} maxWidth="400px">
+            <Typography variant="h6" mb={2}>
+              Confirm Deletion
+            </Typography>
+            <Typography mb={3}>
+              Are you sure you want to delete this experience record? This action cannot be undone.
+            </Typography>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <Button onClick={() => setConfirmDeleteOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleDeleteConfirm}
+                sx={{ backgroundColor: "#790077", color: "#fff" }}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Box>
+        </Dialog>
+
       </Box>
     </Dialog>
   );
